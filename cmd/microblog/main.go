@@ -5,11 +5,15 @@ import (
 	"os"
 	"os/signal"
 
+	_ "github.com/joho/godotenv/autoload"
 	"github.com/kisstc/microblog/internal/server"
 )
 
 func main() {
-	serv, err := server.New("8080")
+
+	port := os.Getenv("PORT")
+
+	serv, err := server.New(port)
 	if err != nil {
 		log.Fatal(err)
 	}
