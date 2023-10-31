@@ -6,15 +6,21 @@ import (
 	"os/signal"
 
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/kisstc/microblog/internal/data"
 	"github.com/kisstc/microblog/internal/server"
 )
 
 func main() {
 
 	port := os.Getenv("PORT")
-
 	serv, err := server.New(port)
 	if err != nil {
+		log.Fatal(err)
+	}
+
+	// conexion a db
+	d := data.New()
+	if err := d.DB.Ping(); err != nil {
 		log.Fatal(err)
 	}
 
@@ -28,4 +34,5 @@ func main() {
 
 	// si todo sale bien, cerrar
 	serv.Close()
+	data.Close()
 }
