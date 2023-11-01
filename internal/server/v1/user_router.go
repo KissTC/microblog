@@ -117,3 +117,16 @@ func (ur *UserRouter) DeleteHandler(w http.ResponseWriter, r *http.Request) {
 
 	response.JSON(w, r, http.StatusOK, response.Map{})
 }
+
+func (ur *UserRouter) Routes() http.Handler {
+
+	r := chi.NewRouter()
+	// TODO: add routes
+	r.Get("/", ur.GetAllHandler)
+	r.Post("/", ur.CreateHandler)
+	r.Get("/{id}", ur.GetOneHandler)
+	r.Put("/{id}", ur.UpdateHandler)
+	r.Delete("/{id}", ur.DeleteHandler)
+
+	return r
+}
