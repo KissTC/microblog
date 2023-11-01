@@ -6,6 +6,9 @@ import (
 	"time"
 
 	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
+
+	v1 "github.com/kisstc/microblog/internal/server/v1"
 )
 
 type Server struct {
@@ -16,6 +19,11 @@ type Server struct {
 func New(port string) (*Server, error) {
 	// inicialiamos chi para route
 	r := chi.NewRouter()
+
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+
+	r.Mount("/api/v1", v1.New())
 
 	serv := &http.Server{
 		Addr:         ":" + port,
