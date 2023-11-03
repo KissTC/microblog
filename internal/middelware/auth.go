@@ -34,13 +34,13 @@ func Authorizator(next http.Handler) http.Handler {
 		authorization := r.Header.Get("Authorization")
 		tokenString, err := tokenFromAuthorization(authorization)
 		if err != nil {
-			response.HTTPError(w, r, http.StatusUnauthorized, "heree 1"+err.Error())
+			response.HTTPError(w, r, http.StatusUnauthorized, err.Error())
 			return
 		}
 
 		c, err := claim.GetFromToken(tokenString, signingString)
 		if err != nil {
-			response.HTTPError(w, r, http.StatusUnauthorized, "heree 2"+err.Error())
+			response.HTTPError(w, r, http.StatusUnauthorized, err.Error())
 			return
 		}
 

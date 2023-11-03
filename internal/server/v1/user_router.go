@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/kisstc/microblog/internal/middelware"
@@ -125,7 +126,7 @@ func (ur *UserRouter) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	var u user.User
 	err := json.NewDecoder(r.Body).Decode(&u)
 	if err != nil {
-		response.HTTPError(w, r, http.StatusBadRequest, "hola 2"+err.Error())
+		response.HTTPError(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -135,7 +136,7 @@ func (ur *UserRouter) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	//validar si existe el usuario
 	storeUser, err := ur.Repository.GetByUsername(ctx, u.Username)
 	if err != nil {
-		response.HTTPError(w, r, http.StatusBadRequest, "hola 2"+err.Error())
+		response.HTTPError(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -145,9 +146,10 @@ func (ur *UserRouter) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	c := claim.Claim{ID: int(storeUser.ID)}
-	token, err := c.GetToken(os.Getenv("SIGNING_STRING"))
+	expTime := time.Now().Add(time.Hour)
+	token, err := c.GetToken(os.Getenv("SIGNING_STRING"), expTime)
 	if err != nil {
-		response.HTTPError(w, r, http.StatusInternalServerError, "hola 3"+err.Error())
+		response.HTTPError(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -158,14 +160,12 @@ func (ur *UserRouter) Routes() http.Handler {
 
 	r := chi.NewRouter()
 	// TODO: add routes
-	r.
-		With(middelware.Authorizator).
-		Get("/", ur.GetAllHandler)
+	r.Get("/", ur.GetAllHandler)
 	r.Post("/", ur.CreateHandler)
 	r.Get("/{id}", ur.GetOneHandler)
-	r.Put("/{id}", ur.UpdateHandler)
-	r.Delete("/{id}", ur.DeleteHandler)
-	r.Post("/login", ur.LoginHandler)
+	r.With(middelware.Authorizator).Put("/{id}", ur.UpdateHandler)
+	r.With(middelware.Authorizator).Delete("/{id}", ur.DeleteHandler)
+	r.With(middelware.Authorizator).Post("/login", ur.LoginHandler)
 
 	return r
 }

@@ -2,16 +2,20 @@ package claim
 
 import (
 	"errors"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
 )
 
 type Claim struct {
 	jwt.StandardClaims
-	ID int `json:"id"`
+	ID  int   `json:"id"`
+	Exp int64 `json:"exp"`
 }
 
-func (c *Claim) GetToken(signingString string) (string, error) {
+func (c *Claim) GetToken(signingString string, expirationTime time.Time) (string, error) {
+	c.StandardClaims.ExpiresAt = expirationTime.Unix()
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, c)
 	return token.SignedString([]byte(signingString))
 }
